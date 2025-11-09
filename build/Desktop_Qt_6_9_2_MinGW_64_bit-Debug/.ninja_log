@@ -1,0 +1,5 @@
+# ninja log v6
+4	1158	7843539808934767	CMakeFiles/lab4.dir/main.cpp.obj	134aa92fe14969b7
+17	1416	7843539809055860	CMakeFiles/lab4.dir/Router.cpp.obj	96291fcde8891005
+28	1461	7843539809171870	CMakeFiles/lab4.dir/Enrutador.cpp.obj	cc25817eabffc978
+1461	2139	7843539823502037	lab4.exe	33619d2eb930a578
