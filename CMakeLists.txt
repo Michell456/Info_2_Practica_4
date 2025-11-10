@@ -5,7 +5,8 @@ project(Lab4 LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-add_executable(Lab4 main.cpp)
+add_executable(Lab4 main.cpp
+    Red.h Red.cpp)
 
 include(GNUInstallDirs)
 install(TARGETS Lab4
