@@ -204,22 +204,24 @@ void Red::cargarDesdeArchivo(const string& nombreArchivo) {
 
     string linea;
     while (getline(archivo, linea)) {
-        istringstream ss(linea);
-        string comando;
-        ss >> comando;
+        if (linea.empty()) continue;
 
-        if (comando == "ROUTER") {
-            string id;
-            if (ss >> id) {
-                agregarEnrutador(id);
+        istringstream ss(linea);
+        string token1, token2, token3;
+        ss >> token1 >> token2 >> token3;
+
+        if (token1 == "ROUTER") {
+            // Formato: ROUTER A
+            if (!token2.empty()) {
+                agregarEnrutador(token2);
             }
         }
-        else if (comando == "CONNECT") {
-            string id1, id2;
-            int costo;
-            if (ss >> id1 >> id2 >> costo) {
-                conectar(id1, id2, costo);
-            }
+        else if (!token2.empty() && !token3.empty()) {
+            // Formato: A B 4 (asume que es una conexión)
+            string id1 = token1;
+            string id2 = token2;
+            int costo = stoi(token3);
+            conectar(id1, id2, costo);
         }
     }
     archivo.close();

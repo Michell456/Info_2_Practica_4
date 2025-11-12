@@ -2,21 +2,28 @@
 #define ENRUTADOR_H
 
 #include <vector>
+#include <map>
 #include <utility>
+#include <iostream>
+#include <climits>
+#include <queue>
 using namespace std;
 
-class Enrutador{
+class Enrutador {
 public:
-    Enrutador(int id);
-    int idEnrut;
-    vector<pair<Enrutador*, int>> vecinos;
-    int distancia; //Distancia de este enrutador a la fuente
+    string idEnrut;
+    std::vector<std::pair<Enrutador*, int>> vecinos;
+    std::map<Enrutador*, std::vector<Enrutador*>> caminos;
+    int distancia;
     bool visitado;
+
+    Enrutador(string id);
     void nuevoVecino(Enrutador* vecino, int costo);
     void reinicio();
-
+    void mostrarTabla() const;
 };
 
-void dijkstra(Enrutador* fuente);
+void dijkstra(Enrutador* fuente, const std::vector<Enrutador*>& todos);
 
-#endif // ENRUTADOR_H
+#endif
+
