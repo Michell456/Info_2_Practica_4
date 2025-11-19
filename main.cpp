@@ -175,7 +175,7 @@ int main() {
             cout << "Saliendo del programa..." << endl;
         }
         else {
-            cout << "Opcion no valida! Por favor ingrese una opcion entre 0 y 11." << endl;
+            cout << "Opcion no valida Por favor ingrese una opcion entre 0 y 11." << endl;
         }
 
         limpiarBuffer();

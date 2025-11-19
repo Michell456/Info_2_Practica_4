@@ -20,27 +20,36 @@ void Red::agregarEnrutador(string id) {
 }
 
 void Red::eliminarEnrutador(string id) {
-    auto it = enrutadores.find(id);
-    if (it != enrutadores.end()) {
-        // Remover este enrutador de las listas de vecinos de otros routers
-        for (auto& par : enrutadores) {
-            if (par.first != id) {
-                auto& vecinos = par.second->vecinos;
-                vecinos.erase(
-                    remove_if(vecinos.begin(), vecinos.end(),
-                              [&](auto& conexion) { return conexion.first == it->second; }),
-                    vecinos.end()
-                    );
-            }
-        }
 
-        // Liberar memoria y eliminar del mapa
-        delete it->second;
-        enrutadores.erase(it);
-        cout << "Enrutador " << id << " eliminado exitosamente." << endl;
-    } else {
+    auto iterador = enrutadores.find(id);
+
+    if (iterador == enrutadores.end()) {
         cout << "El enrutador " << id << " no existe." << endl;
+        return;
     }
+
+    Enrutador* enrutadorAEliminar = iterador->second;
+
+    for (auto& [idOtroEnrutador, punteroEnrutador] : enrutadores) {
+        if (idOtroEnrutador == id) continue;
+
+        auto& listaVecinos = punteroEnrutador->vecinos;
+
+        listaVecinos.erase(
+            remove_if(listaVecinos.begin(), listaVecinos.end(),
+                      [&](auto& conexion) {
+
+                          return conexion.first == enrutadorAEliminar;
+                      }),
+            listaVecinos.end()
+            );
+    }
+
+    delete enrutadorAEliminar;
+
+    enrutadores.erase(iterador);
+
+    cout << "Enrutador " << id << " eliminado exitosamente." << endl;
 }
 
 void Red::conectar(string id1, string id2, int costo) {
@@ -115,7 +124,7 @@ void Red::desconectar(string id1, string id2) {
 void Red::mostrarTopologia() const {
     cout << "\n=== TOPOLOGÍA DE LA RED ===" << endl;
     if (enrutadores.empty()) {
-        cout << "La red está vacía." << endl;
+        cout << "La red está vacia." << endl;
         return;
     }
 
@@ -144,7 +153,7 @@ void Red::mostrarCamino(string origen, string destino) const {
 
     auto it = rOrigen->caminos.find(rDestino);
     if (it != rOrigen->caminos.end() && !it->second.empty()) {
-        cout << "Camino más corto de " << origen << " a " << destino << ": ";
+        cout << "Camino mas corto de " << origen << " a " << destino << ": ";
         for (size_t i = 0; i < it->second.size(); ++i) {
             cout << it->second[i]->idEnrut;
             if (i < it->second.size() - 1) cout << " -> ";
@@ -157,7 +166,7 @@ void Red::mostrarCamino(string origen, string destino) const {
 
 void Red::calcularRutas() {
     if (enrutadores.empty()) {
-        cout << "La red está vacía. No hay rutas para calcular." << endl;
+        cout << "La red esta vacia. No hay rutas para calcular." << endl;
         return;
     }
 
@@ -225,7 +234,7 @@ void Red::cargarDesdeArchivo(const string& nombreArchivo) {
         }
     }
     archivo.close();
-    cout << "Topología cargada desde " << nombreArchivo << " exitosamente." << endl;
+    cout << "Topologia cargada desde " << nombreArchivo << " exitosamente." << endl;
 }
 
 void Red::guardarEnArchivo(const string& nombreArchivo) const {
@@ -252,12 +261,12 @@ void Red::guardarEnArchivo(const string& nombreArchivo) const {
     }
 
     archivo.close();
-    cout << "Topología guardada en " << nombreArchivo << " exitosamente." << endl;
+    cout << "Topologia guardada en " << nombreArchivo << " exitosamente." << endl;
 }
 
-void Red::crearRedAleatoria(int numRouters, double probabilidadConexion, int costoMaximo) {
+void Red::crearRedAleatoria(int numRouters, double probabilidad, int costoMaximo) {
     if (numRouters > 26) {
-        cout << "Error: Máximo 26 enrutadores para usar letras A-Z." << endl;
+        cout << "Error: Maximo 26 enrutadores." << endl;
         return;
     }
 
@@ -266,17 +275,17 @@ void Red::crearRedAleatoria(int numRouters, double probabilidadConexion, int cos
     uniform_real_distribution<> disProb(0.0, 1.0);
     uniform_int_distribution<> disCosto(1, costoMaximo);
 
-    // Crear routers con letras (A, B, C, ...)
+    //Crear routers
     for (int i = 0; i < numRouters; ++i) {
         string id = string(1, 'A' + i);
         agregarEnrutador(id);
     }
 
-    // Crear conexiones aleatorias
+    //Crear conexiones aleatorias
     int conexionesCreadas = 0;
     for (int i = 0; i < numRouters; ++i) {
         for (int j = i + 1; j < numRouters; ++j) {
-            if (disProb(gen) < probabilidadConexion) {
+            if (disProb(gen) < probabilidad) {
                 string id1 = string(1, 'A' + i);
                 string id2 = string(1, 'A' + j);
                 int costo = disCosto(gen);
@@ -286,6 +295,33 @@ void Red::crearRedAleatoria(int numRouters, double probabilidadConexion, int cos
         }
     }
 
-    cout << "Red aleatoria creada con " << numRouters << " enrutadores y "
+    // Conectar enrutadores secuencialmente si hay muy pocas conexiones
+    if (conexionesCreadas < numRouters - 1) {
+        cout << "Red muy desconectada. Agregando conexiones mí}inimas..." << endl;
+        for (int i = 0; i < numRouters - 1; ++i) {
+            string id1 = string(1, 'A' + i);
+            string id2 = string(1, 'A' + i + 1);
+            if (!estanConectados(id1, id2)) {
+                conectar(id1, id2, disCosto(gen));
+                cout << "Conectado " << id1 << " <-> " << id2 << " para garantizar conectividad" << endl;
+            }
+        }
+    }
+
+    cout << "Red creada con " << numRouters << " enrutadores y "
          << conexionesCreadas << " conexiones." << endl;
+
+    calcularRutas();
+}
+
+bool Red::estanConectados(string id1, string id2) const {
+    if (!existeEnrutador(id1) || !existeEnrutador(id2)) return false;
+
+    Enrutador* r1 = enrutadores.at(id1);
+    for (const auto& vecino : r1->vecinos) {
+        if (vecino.first->idEnrut == id2) {
+            return true;
+        }
+    }
+    return false;
 }

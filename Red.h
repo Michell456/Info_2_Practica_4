@@ -45,6 +45,8 @@ public:
 
     // Generación aleatoria
     void crearRedAleatoria(int numRouters, double probabilidadConexion, int costoMaximo);
+
+    bool estanConectados(string id1, string id2) const;
 };
 
 #endif
